@@ -25,7 +25,7 @@ cniConfig:
 nodes:
   - hostname: "talosone"
     ipAddress: "192.168.1.4"
-    installDisk: "/pci0000:00/0000:00:17.0/ata2/host3/target3:0:0/3:0:0:0"
+    installDisk: "/dev/sdc"
     talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: true
     networkInterfaces:
@@ -42,7 +42,7 @@ nodes:
           ip: "192.168.1.9"
   - hostname: "talostwo"
     ipAddress: "192.168.1.6"
-    installDisk: "/pci0000:00/0000:00:05.0/ata4/host3/target3:0:0/3:0:0:0"
+    installDisk: "/dev/sda"
     talosImageURL: factory.talos.dev/installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba
     controlPlane: false
     networkInterfaces:
