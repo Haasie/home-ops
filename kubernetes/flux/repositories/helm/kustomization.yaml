@@ -15,9 +15,3 @@ resources:
   - ./external-dns.yaml
   - ./ingress-nginx.yaml
   - ./k8s-gateway.yaml
-  - ./csi-driver-nfs.yaml
-  - ./grafana.yaml
-  - ./hajimari.yaml
-  - ./intel.yaml
-  - ./longhorn.yaml
-  - ./node-feature-discovery.yaml
