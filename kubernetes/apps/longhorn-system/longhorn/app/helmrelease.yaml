@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: longhorn
-      version: 1.7.2
+      version: 1.5.3
       sourceRef:
         kind: HelmRepository
         name: longhorn
@@ -22,34 +22,27 @@ spec:
     remediation:
       retries: 3
   values:
-values:
     csi:
-      attacherReplicaCount: &replicas 1
-      provisionerReplicaCount: *replicas
-      resizerReplicaCount: *replicas
-      snapshotterReplicaCount: *replicas
+      kubeletRootDir: /var/lib/kubelet
     persistence:
+      defaultClass: true
+      defaultDataPath: /mnt/longhorn
       defaultClassReplicaCount: 1
+      defaultFsType: ext4
+      reclaimPolicy: Delete
     defaultSettings:
-      createDefaultDiskLabeledNodes: true
-      defaultDataLocality: true
-      replicaAutoBalance: true
-      storageMinimalAvailablePercentage: 1
-      storageReservedPercentageForDefaultDisk: 10
-      defaultLonghornStaticStorageClass: longhorn
+      storageMinimalAvailablePercentage: 10
+      # backupTarget: nfs://${SVC_NAS_ADDR}:/volume1/backups/longhorn
+      # backupstorePollInterval: 1800
       nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
-      concurrentAutomaticEngineUpgradePerNodeLimit: 3
-      orphanAutoDeletion: true
-    longhornUI:
-      replicas: *replicas
+      defaultDataLocality: best-effort
     ingress:
       enabled: true
       ingressClassName: internal
-      host: longhorn.${SECRET_DOMAIN}
+      host: "longhorn.${SECRET_DOMAIN}"
       tls: true
+      tlsSecret: "longhorn-tls"
+      path: /
       annotations:
           hajimari.io/icon: mdi:cow
-    metrics:
-      serviceMonitor:
-        enabled: true
 
