@@ -40,6 +40,8 @@ nodes:
         mtu: 1500
         vip:
           ip: "192.168.1.9"
+    patches:
+      - "@./patches/talosone/longhorn.yaml"
   - hostname: "talostwo"
     ipAddress: "192.168.1.6"
     installDisk: "/dev/sda"
@@ -55,6 +57,8 @@ nodes:
           - network: 0.0.0.0/0
             gateway: "192.168.1.1"
         mtu: 1500
+    patches:
+      - "@./patches/talostwo/longhorn.yaml"
 
 # Global patches
 patches:
