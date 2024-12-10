@@ -111,6 +111,14 @@ spec:
     persistence:
       config:
         existingClaim: plex
+      logs:
+        type: emptyDir
+        globalMounts:
+          - path: /config/Library/Application Support/Plex Media Server/Logs
+      tmp:
+        type: emptyDir
+      transcode:
+        type: emptyDir
       media:
         enabled: true
         type: nfs
@@ -119,7 +127,3 @@ spec:
         globalMounts:
           - path: /media
             readOnly: false
-      tmp:
-        type: emptyDir
-      transcode:
-        type: emptyDir
