@@ -95,12 +95,6 @@ spec:
                 service:
                   identifier: app
                   port: http
-    volumeClaimTemplates:
-      - name: config
-        mountPath: /config
-        accessMode: ReadWriteOnce
-        size: 15Gi
-        storageClass: openebs-hostpath
     persistence:
       config:
         existingClaim: radarr
