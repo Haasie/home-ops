@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -21,84 +22,110 @@ spec:
   upgrade:
     cleanupOnFail: true
     remediation:
+      strategy: rollback
       retries: 3
-  uninstall:
-    keepHistory: false
   dependsOn:
+#    - name: longhorn
+#      namespace: longhorn-system
     - name: intel-device-plugin-gpu
       namespace: kube-system
   values:
-    controller:
-      type: statefulset
-    image:
-      repository: ghcr.io/onedr0p/plex-beta
-      tag: 1.32.6.7371-b6a09ad81@sha256:437685fa85bee0731f36610b473b807aad436ca2408815018002206f9abf6fe6
-      pullPolicy: IfNotPresent
-    env:
-      TZ: "${TIMEZONE}"
+#    initContainers:
+#      01-init-db:
+#        image: ghcr.io/onedr0p/postgres-init:14.8
+#        imagePullPolicy: IfNotPresent
+#        envFrom: &envFrom
+#          - secretRef:
+#              name: radarr-secret
+    controllers:
+      plex:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: ghcr.io/onedr0p/plex
+              tag: 1.41.2.9200-c6bbc1b53@sha256:1f28b5e5a964481f80e76db3c986082d2fc3bca2d16d2742704e9adf8349c79c
+            env:
+              TZ: "${TIMEZONE}"
+            probes:
+              liveness: &probes
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /identity
+                    port: 32400
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probes
+              startup:
+                enabled: true
+                spec:
+                  failureThreshold: 30
+                  periodSeconds: 10
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                gpu.intel.com/i915: 1
+                memory: 16Gi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
+        supplementalGroups: [44]
+        seccompProfile: { type: RuntimeDefault }
+      nodeSelector:
+        intel.feature.node.kubernetes.io/gpu: "true"
     service:
-      main:
+      app:
+        controller: plex
+        type: LoadBalancer
+        annotations:
+          lbipam.cilium.io/ips: 192.168.42.128
         ports:
           http:
             port: 32400
     ingress:
-      main:
-        enabled: true
-        ingressClassName: external
+      app:
         annotations:
-          external-dns.alpha.kubernetes.io/target: "external.${SECRET_DOMAIN}"
           nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-          hajimari.io/icon: "mdi:plex"
+        className: external
         hosts:
-          - host: &host "{{ .Release.Name }}.${SECRET_DOMAIN}"
+          - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
               - path: /
-                pathType: Prefix
-        tls:
-          - hosts:
-              - *host
-    podSecurityContext:
-      runAsUser: 568
-      runAsGroup: 568
-      fsGroup: 568
+                service:
+                  identifier: app
+                  port: http
     volumeClaimTemplates:
-      - name: config-plex
+      - name: config
         mountPath: /config
         accessMode: ReadWriteOnce
-        size: 150Gi
-        storageClass: longhorn
-        labels:
-          snapshot.home.arpa/enabled: "true"
+        size: 15Gi
+        storageClass: openebs-hostpath
     persistence:
+      config:
+        existingClaim: plex
       media:
         enabled: true
         type: nfs
         server: "192.168.1.5"
         path: /mnt/tank/media
-        mountPath: /media
-        readOnly: false
-      transcode:
-        enabled: true
+        globalMounts:
+          - path: /media
+            readOnly: false
+      tmp:
         type: emptyDir
-    nodeSelector:
-      intel.feature.node.kubernetes.io/gpu: "true"
-#    nodeSelector:
-#      intel.feature.node.kubernetes.io/gpu: "true"
-#      gputype: "power"
-#    affinity:
-#      podAntiAffinity:
-#        requiredDuringSchedulingIgnoredDuringExecution:
-#          - labelSelector:
-#              matchExpressions:
-#                - key: app.kubernetes.io/name
-#                  operator: In
-#                  values: ["sabnzbd"]
-#            topologyKey: kubernetes.io/hostname
-    resources:
-      requests:
-        gpu.intel.com/i915: 1
-        cpu: 100m
-        memory: 1Gi
-      limits:
-        gpu.intel.com/i915: 1
-        memory: 6Gi
+      transcode:
+        type: emptyDir

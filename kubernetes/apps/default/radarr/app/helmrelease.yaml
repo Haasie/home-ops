@@ -4,7 +4,6 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: radarr
-  namespace: default
 spec:
   interval: 30m
   chart:
@@ -15,7 +14,6 @@ spec:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
-  maxHistory: 2
   install:
     remediation:
       retries: 3
@@ -24,11 +22,6 @@ spec:
     remediation:
       strategy: rollback
       retries: 3
-  dependsOn:
-#    - name: longhorn
-#      namespace: longhorn-system
-    - name: intel-device-plugin-gpu
-      namespace: kube-system
   values:
 #    initContainers:
 #      01-init-db:
@@ -38,38 +31,37 @@ spec:
 #          - secretRef:
 #              name: radarr-secret
     controllers:
-      plex:
+      radarr:
         annotations:
           reloader.stakater.com/auto: "true"
         containers:
           app:
             image:
-              repository: ghcr.io/onedr0p/plex
-              tag: 1.41.2.9200-c6bbc1b53@sha256:1f28b5e5a964481f80e76db3c986082d2fc3bca2d16d2742704e9adf8349c79c
+              repository: ghcr.io/onedr0p/radarr-develop
+              tag: 5.16.1.9508@sha256:630bb09a9160fa7cf932cc79cc04034b4439f3f91ffbd95887233c1e26a433bb
             env:
-              TZ: "${TIMEZONE}"
-              RADARR__INSTANCE_NAME: Radarr
-              RADARR__PORT: &port 80
-              RADARR__APPLICATION_URL: "https://{{ .Release.Name }}.${SECRET_DOMAIN}"
-              RADARR__LOG_LEVEL: info
+              RADARR__APP__INSTANCENAME: Radarr
+              RADARR__APP__THEME: dark
+              RADARR__AUTH__METHOD: External
+              RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
+              RADARR__LOG__DBENABLED: "False"
+              RADARR__LOG__LEVEL: info
+              RADARR__SERVER__PORT: &port 80
+              RADARR__UPDATE__BRANCH: develop
+              TZ: Europe/Amsterdam
             probes:
               liveness: &probes
                 enabled: true
                 custom: true
                 spec:
                   httpGet:
-                    path: /identity
-                    port: 32400
+                    path: /ping
+                    port: *port
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-              startup:
-                enabled: true
-                spec:
-                  failureThreshold: 30
-                  periodSeconds: 10
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -78,8 +70,7 @@ spec:
               requests:
                 cpu: 100m
               limits:
-                gpu.intel.com/i915: 1
-                memory: 16Gi
+                memory: 4Gi
     defaultPodOptions:
       securityContext:
         runAsNonRoot: true
@@ -87,24 +78,16 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
-        supplementalGroups: [44]
         seccompProfile: { type: RuntimeDefault }
-      nodeSelector:
-        intel.feature.node.kubernetes.io/gpu: "true"
     service:
       app:
-        controller: plex
-        type: LoadBalancer
-        annotations:
-          lbipam.cilium.io/ips: 192.168.42.128
+        controller: radarr
         ports:
           http:
-            port: 32400
+            port: *port
     ingress:
       app:
-        annotations:
-          nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-        className: external
+        className: internal
         hosts:
           - host: "{{ .Release.Name }}.${SECRET_DOMAIN}"
             paths:
@@ -120,7 +103,9 @@ spec:
         storageClass: openebs-hostpath
     persistence:
       config:
-        existingClaim: plex
+        existingClaim: radarr
+      tmp:
+        type: emptyDir
       media:
         enabled: true
         type: nfs
@@ -129,7 +114,3 @@ spec:
         globalMounts:
           - path: /media
             readOnly: false
-      tmp:
-        type: emptyDir
-      transcode:
-        type: emptyDir
