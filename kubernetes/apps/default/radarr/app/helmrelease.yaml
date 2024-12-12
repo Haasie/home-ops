@@ -91,6 +91,8 @@ spec:
     persistence:
       config:
         existingClaim: radarr
+        globalMounts:
+          - path: /app/config
       tmp:
         type: emptyDir
       media:
