@@ -5,22 +5,19 @@ kind: Kustomization
 metadata:
   name: &app radarr
   namespace: flux-system
+  labels:
+    substitution.flux.home.arpa/enabled: "true"
 spec:
-  targetNamespace: default
-  commonMetadata:
-    labels:
-      app.kubernetes.io/name: *app
-#  dependsOn:
-#    - name: cloudnative-pg-cluster
-#    - name: external-secrets-stores
-#  path: ./kubernetes/main/apps/default/radarr/app
+  path: ./kubernetes/apps/default/overseerr/app
   prune: true
   sourceRef:
     kind: GitRepository
     name: home-kubernetes
-  wait: false
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: overseerr
+      namespace: default
   interval: 30m
-  timeout: 5m
-  postBuild:
-    substitute:
-      APP: *app
+  retryInterval: 1m
+  timeout: 3m
