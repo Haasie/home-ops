@@ -64,7 +64,6 @@ spec:
                 cpu: 100m
               limits:
                 memory: 4Gi
-
     service:
       app:
         controller: radarr
