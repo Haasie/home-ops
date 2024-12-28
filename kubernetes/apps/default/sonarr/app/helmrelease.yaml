@@ -96,9 +96,9 @@ spec:
           - path: /app/config
       tmp:
         type: emptyDir
-#      media:
-#        type: nfs
-#        server: "192.168.1.5"
-#        path: /mnt/tank/media
-#        globalMounts:
-#          - path: /media
+      media:
+        type: nfs
+        server: 192.168.1.5
+        path: /mnt/tank/media
+        globalMounts:
+          - path: /media
