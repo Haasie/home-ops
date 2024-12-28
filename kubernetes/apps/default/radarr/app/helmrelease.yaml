@@ -3,7 +3,7 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: radarr
+  name: &app radarr
 spec:
   interval: 30m
   chart:
@@ -64,15 +64,12 @@ spec:
                 cpu: 100m
               limits:
                 memory: 4Gi
-#    defaultPodOptions:
-#      securityContext:
-#        runAsNonRoot: true
-#        runAsUser: 568
-#        runAsGroup: 568
-#        fsGroup: 568
-#        fsGroupChangePolicy: OnRootMismatch
-#        supplementalGroups: [10000]
-#        seccompProfile: { type: RuntimeDefault }
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 568
+        runAsGroup: 568
+        fsGroup: 568
+        fsGroupChangePolicy: OnRootMismatch
     service:
       app:
         controller: radarr
@@ -91,14 +88,15 @@ spec:
                   port: http
     persistence:
       config:
-        existingClaim: radarr
+        enabled: true
+        existingClaim: *app
         globalMounts:
-          - path: /app/config
+          - path: /config
       tmp:
         type: emptyDir
       media:
         type: nfs
-        server: "192.168.1.5"
+        server: 192.168.1.5
         path: /mnt/tank/media
         globalMounts:
           - path: /media
