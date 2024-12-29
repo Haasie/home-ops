@@ -33,6 +33,11 @@ spec:
               repository: ghcr.io/onedr0p/bazarr
               tag: 1.5.0@sha256:5eb3ff2384c470fa351ff486b1b61660914a2ba144e908258cf111555a583356
             env:
+              BAZARR__INSTANCE_NAME: bazarr
+              BAZARR__AUTHENTICATION_METHOD: External
+              BAZARR__AUTHENTICATION_REQUIRED: DisabledForLocalAddresses
+              BAZARR__LOG_LEVEL: info
+              BAZARR__PORT: &port 6767
               TZ: Europe/Amsterdam
             probes:
               liveness: &probes
@@ -55,7 +60,7 @@ spec:
               requests:
                 cpu: 10m
               limits:
-                memory: 128Mi
+                memory: 512Mi
     defaultPodOptions:
       securityContext:
         runAsUser: 568
@@ -79,16 +84,8 @@ spec:
                   identifier: app
                   port: http
     persistence:
-      cache:
-        type: emptyDir
-        globalMounts:
-          - path: /config/cache
       config:
         existingClaim: bazarr
-      log:
-        type: emptyDir
-        globalMounts:
-          - path: /config/log
       tmp:
         type: emptyDir
       media:
