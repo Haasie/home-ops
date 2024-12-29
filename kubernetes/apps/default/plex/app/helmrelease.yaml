@@ -108,8 +108,8 @@ spec:
       config:
         existingClaim: plex
         # TODO: If setting up Plex for the first time, you'll want to add the globalMounts section
-        # globalMounts:
-        #   - path: /config/Library/Application Support/Plex Media Server
+        globalMounts:
+          - path: /config/Library/Application Support/Plex Media Server
       # Separate PVC for cache to avoid backing up cache files
       cache:
         existingClaim: plex-cache
@@ -125,8 +125,8 @@ spec:
         type: emptyDir
       media:
         type: nfs
-        server: 192.168.86.90
-        path: /volume1/media
+        server: 192.168.1.5
+        path: /mnt/tank/media
         globalMounts:
           - path: /media
             readOnly: true
