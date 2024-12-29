@@ -12,7 +12,7 @@ resources:
   - ./tautulli/ks.yaml
 #  - ./calibre/ks.yaml
 #  - ./calibre-web/ks.yaml
-#  - ./bazarr/ks.yaml
+  - ./bazarr/ks.yaml
 #  - ./lidarr/ks.yaml
 #  - ./readarr/ks.yaml
 #  - ./recyclarr/ks.yaml
