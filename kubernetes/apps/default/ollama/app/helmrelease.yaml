@@ -107,5 +107,5 @@ spec:
         enabled: true
         existingClaim: *app
         globalMounts:
-          - path: /root/.ollama
+          - path: /data/.ollama
 
