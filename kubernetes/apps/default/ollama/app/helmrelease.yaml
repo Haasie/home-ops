@@ -60,7 +60,6 @@ spec:
                 cpu: 200m
                 gpu.intel.com/i915: "1"
               limits:
-                memory: 8Gi
                 gpu.intel.com/i915: "1"
     defaultPodOptions:
       securityContext:
