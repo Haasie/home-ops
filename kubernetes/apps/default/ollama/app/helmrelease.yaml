@@ -36,7 +36,7 @@ spec:
               LIBVA_DRIVER_NAME: i965
               OLLAMA_HOST: 0.0.0.0
               OLLAMA_ORIGINS: "*"
-              OLLAMA_MODELS: /models
+              OLLAMA_MODELS: /data/.ollama/models
               TZ: Europe/Amsterdam
             probes:
               liveness: &probes
