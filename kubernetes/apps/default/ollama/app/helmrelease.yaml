@@ -61,12 +61,6 @@ spec:
                 gpu.intel.com/i915: 1
               limits:
                 gpu.intel.com/i915: 1
-    defaultPodOptions:
-      securityContext:
-        runAsUser: 568
-        runAsGroup: 568
-        fsGroup: 568
-        fsGroupChangePolicy: OnRootMismatch
     nodeSelector:
       gpu.intel.com/i915: "1"  # Match actual node label
     affinity:
