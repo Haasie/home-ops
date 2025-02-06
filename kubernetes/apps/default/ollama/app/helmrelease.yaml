@@ -67,15 +67,25 @@ spec:
         runAsGroup: 568
         fsGroup: 568
         fsGroupChangePolicy: OnRootMismatch
+    nodeSelector:
+      gpu.intel.com/i915: "1"  # Match actual node label
     affinity:
-      podAntiAffinity:
+      nodeAffinity:  # Add if you need specific node selection
         requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-                - key: app
-                  operator: In
-                  values: ["plex"]
-            topologyKey: "kubernetes.io/hostname"
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: gpu.intel.com/i915
+              operator: Exists
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app  # Verify Plex's actual label
+                    operator: In
+                    values: ["plex"]
+              topologyKey: "kubernetes.io/hostname"
     service:
       app:
         controller: ollama
