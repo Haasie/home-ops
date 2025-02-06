@@ -31,7 +31,7 @@ spec:
           app:
             image:
               repository: docker.io/ollama/ollama
-              tag: 0.5.7-rocm
+              tag: 0.5.7
             env:
               LIBVA_DRIVER_NAME: i965
               OLLAMA_HOST: 0.0.0.0
@@ -58,7 +58,6 @@ spec:
             resources:
               requests:
                 cpu: 200m
-                memory: 4Gi
                 gpu.intel.com/i915: "1"
               limits:
                 memory: 8Gi
