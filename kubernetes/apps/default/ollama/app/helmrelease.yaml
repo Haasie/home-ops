@@ -38,6 +38,7 @@ spec:
               OLLAMA_ORIGINS: "*"
               OLLAMA_MODELS: /data/.ollama/models
               TZ: Europe/Amsterdam
+              OLLAMA_INTEL_GPU: "true"
             probes:
               liveness: &probes
                 enabled: true
