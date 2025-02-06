@@ -58,9 +58,9 @@ spec:
             resources:
               requests:
                 cpu: 200m
-                gpu.intel.com/i915: "1"
+                gpu.intel.com/i915: "3"
               limits:
-                gpu.intel.com/i915: "1"
+                gpu.intel.com/i915: "3"
     defaultPodOptions:
       securityContext:
         runAsUser: 568
@@ -97,7 +97,5 @@ spec:
         enabled: true
         existingClaim: *app
         globalMounts:
-          - path: /config
-      tmp:
-        type: emptyDir
+          - path: /root/.ollama
 
