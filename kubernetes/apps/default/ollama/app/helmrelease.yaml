@@ -33,7 +33,7 @@ spec:
               repository: docker.io/ollama/ollama
               tag: 0.5.7
             env:
-              LIBVA_DRIVER_NAME: i965
+              LIBVA_DRIVER_NAME: i915
               OLLAMA_HOST: 0.0.0.0
               OLLAMA_ORIGINS: "*"
               OLLAMA_MODELS: /data/.ollama/models
