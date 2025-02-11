@@ -33,7 +33,10 @@ spec:
               repository: docker.io/ollama/ollama
               tag: 0.5.7
             env:
-              LIBVA_DRIVER_NAME: i915
+              OLLAMA_LLM_LIBRARY: "rocm"
+              LIBVA_DRIVER_NAME: "iHD"
+              ONEAPI_DEVICE_SELECTOR: "LEVEL_ZERO:0"
+              SYCL_CACHE_PERSISTENT: "1"
               OLLAMA_HOST: 0.0.0.0
               OLLAMA_ORIGINS: "*"
               OLLAMA_MODELS: /data/.ollama/models
@@ -53,15 +56,22 @@ spec:
                   failureThreshold: 3
               readiness: *probes
             securityContext:
-              allowPrivilegeEscalation: false
+              privileged: false
               readOnlyRootFilesystem: false
-              capabilities: { drop: ["ALL"] }
+              capabilities:
+                add: ["SYS_ADMIN"]
+              allowPrivilegeEscalation: true  # Required for GPU access
             resources:
               requests:
                 cpu: 200m
                 gpu.intel.com/i915: 1
               limits:
                 gpu.intel.com/i915: 1
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 0  # Run as root temporarily for debugging
+        runAsGroup: 0
+        supplementalGroups: [44]  # video group ID (verify with `getent group video` on node)
     nodeSelector:
       gpu.intel.com/i915: "1"  # Match actual node label
     affinity:
