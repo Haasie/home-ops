@@ -1,4 +1,3 @@
----
 # yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -50,47 +49,43 @@ spec:
                   httpGet:
                     path: /ping
                     port: 11434
-                  initialDelaySeconds: 0
+                  initialDelaySeconds: 5
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
             securityContext:
-              privileged: false
+              allowPrivilegeEscalation: false
               readOnlyRootFilesystem: false
-              capabilities:
-                add: ["SYS_ADMIN"]
-              allowPrivilegeEscalation: true  # Required for GPU access
+              capabilities: { drop: ["ALL"] }
+            volumeMounts:
+              - mountPath: /dev/dri
+                name: dri
             resources:
               requests:
                 cpu: 200m
                 gpu.intel.com/i915: 1
               limits:
                 gpu.intel.com/i915: 1
+        volumes:
+          - name: dri
+            hostPath:
+              path: /dev/dri
+              type: Directory
     defaultPodOptions:
       securityContext:
-        runAsUser: 0  # Run as root temporarily for debugging
-        runAsGroup: 0
-        supplementalGroups: [44]  # video group ID (verify with `getent group video` on node)
+        runAsUser: 1000  # Standaard non-root gebruiker
+        runAsGroup: 1000
+        supplementalGroups: [44]  # video group ID (check met `getent group video`)
     nodeSelector:
-      gpu.intel.com/i915: "1"  # Match actual node label
+      gpu.intel.com/i915: "1"  # Zorg dat de juiste GPU-node wordt gekozen
     affinity:
-      nodeAffinity:  # Add if you need specific node selection
+      nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
           nodeSelectorTerms:
-          - matchExpressions:
-            - key: gpu.intel.com/i915
-              operator: Exists
-      podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: app  # Verify Plex's actual label
-                    operator: In
-                    values: ["plex"]
-              topologyKey: "kubernetes.io/hostname"
+            - matchExpressions:
+                - key: gpu.intel.com/i915
+                  operator: Exists
     service:
       app:
         controller: ollama
@@ -113,4 +108,9 @@ spec:
         existingClaim: *app
         globalMounts:
           - path: /data/.ollama
-
+      dri:
+        enabled: true
+        type: hostPath
+        hostPath: /dev/dri
+        globalMounts:
+          - path: /dev/dri
