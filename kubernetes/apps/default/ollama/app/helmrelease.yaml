@@ -30,7 +30,7 @@ spec:
           app:
             image:
               repository: docker.io/ollama/ollama
-              tag: 0.5.7
+              tag: 0.5.13
             env:
               OLLAMA_LLM_LIBRARY: "rocm"
               LIBVA_DRIVER_NAME: "iHD"
